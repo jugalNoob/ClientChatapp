@@ -1,0 +1,83 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  
+  body, html {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+  }
+  
+  .all-one {
+    background-color: gray;
+    width: 600px;
+    height: 200px;
+    padding: 20px;
+    border-radius: 10px;
+    overflow: auto;
+  
+  }
+  
+  .one {
+  
+    text-transform: uppercase;
+    overflow: auto!important;
+    padding-bottom: 60px; /* To make space for the input area */
+  }
+  
+  .chat {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .reciver, .sent {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .reciver {
+    background-color: #eaeaea;
+    align-self: flex-start;
+  }
+  
+  .sent {
+    background-color: #007bff;
+    color: white;
+    align-self: flex-end;
+  }
+  
+  .form {
+  
+  
+  }
+  
+  .form input {
+  
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+    outline: none;
+    border-radius: 5px;
+  
+  }
+  
+  .form button {
+  
+    padding: 10px 20px;
+    border: none;
+    outline: none;
+    background-color: green;
+    color: #eae3d2;
+    cursor: pointer;
+    border-radius: 5px;
+  }
