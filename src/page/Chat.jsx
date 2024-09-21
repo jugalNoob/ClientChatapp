@@ -6,24 +6,30 @@ function Chat() {
   const [connectedPeerId, setConnectedPeerId] = useState('');
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
+  const [image, setImage] = useState(null); // State for the selected image
   const peerRef = useRef(null);
 
   useEffect(() => {
-    // Create a new Peer instance
-    peerRef.current = new Peer(); // Peer generates a unique ID for you
+    peerRef.current = new Peer();
 
     const peer = peerRef.current;
 
-    // Get your own peer ID
-    peer.on('open', id => {
+    peer.on('open', (id) => {
       setPeerId(id);
       console.log('My peer ID:', id);
     });
 
-    // Handle incoming connections
-    peer.on('connection', conn => {
-      conn.on('data', data => {
-        setMessages(prevMessages => [...prevMessages, data]);
+    peer.on('connection', (conn) => {
+      conn.on('data', (data) => {
+        // Check if data is an image (base64 string or Blob)
+        if (data.type === 'image') {
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { type: 'image', content: data.content },
+          ]);
+        } else {
+          setMessages((prevMessages) => [...prevMessages, data]);
+        }
       });
 
       conn.on('open', () => {
@@ -31,7 +37,6 @@ function Chat() {
       });
     });
 
-    // Cleanup on component unmount
     return () => {
       peer.destroy();
     };
@@ -42,13 +47,38 @@ function Chat() {
     const conn = peer.connect(connectedPeerId);
 
     conn.on('open', () => {
-      conn.send(message);
-      setMessages(prevMessages => [...prevMessages, `You: ${message}`]);
-      setMessage('');
+      // Send text message if available
+      if (message) {
+        conn.send(message);
+        setMessages((prevMessages) => [...prevMessages, `You: ${message}`]);
+        setMessage('');
+      }
+
+      // Send image if available
+      if (image) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const imageData = reader.result;
+          conn.send({ type: 'image', content: imageData });
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { type: 'image', content: imageData },
+          ]);
+          setImage(null); // Reset image after sending
+        };
+        reader.readAsDataURL(image); // Convert image to base64 string
+      }
     });
 
-    conn.on('data', data => {
-      setMessages(prevMessages => [...prevMessages, data]);
+    conn.on('data', (data) => {
+      if (data.type === 'image') {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { type: 'image', content: data.content },
+        ]);
+      } else {
+        setMessages((prevMessages) => [...prevMessages, data]);
+      }
     });
   };
 
@@ -61,22 +91,34 @@ function Chat() {
           type="text"
           placeholder="Peer ID to connect"
           value={connectedPeerId}
-          onChange={e => setConnectedPeerId(e.target.value)}
+          onChange={(e) => setConnectedPeerId(e.target.value)}
         />
         <button onClick={connectToPeer}>Connect</button>
       </div>
       <div>
         <h2>Messages</h2>
         <ul>
-          {messages.map((msg, index) => (
-            <li key={index}>{msg}</li>
-          ))}
+          {messages.map((msg, index) =>
+            msg.type === 'image' ? (
+              <li key={index}>
+                <img src={msg.content}  alt="Received" width="200" />
+                <a href={msg.content} className="btn" download> click</a>
+              </li>
+            ) : (
+              <li key={index}>{msg}</li>
+            )
+          )}
         </ul>
       </div>
       <input
         type="text"
         value={message}
-        onChange={e => setMessage(e.target.value)}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setImage(e.target.files[0])}
       />
       <button onClick={connectToPeer}>Send</button>
     </div>
@@ -84,6 +126,9 @@ function Chat() {
 }
 
 export default Chat;
+
+
+
 
 
 // import React, { useEffect, useRef, useState } from 'react';
